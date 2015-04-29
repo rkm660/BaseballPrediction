@@ -1,7 +1,7 @@
 import csv
 import math
 from operator import itemgetter
-
+#yo bitches
 
 def readCSVFile(fileName):
     with open(fileName, 'rb') as f:
