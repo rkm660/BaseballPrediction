@@ -1,9 +1,8 @@
 import csv
 import math
 from operator import itemgetter
-#i am commiting a change
-#2 change
-#3 cahnge
+import copy
+import numpy
 
 def readCSVFile(fileName):
     with open(fileName, 'rb') as f:
@@ -39,26 +38,33 @@ def cleanData(data):
             if cleanData[rownum][0]>=0 and cleanData[rownum][1]>=0:
                 if cleanData[rownum][0]<=1 and cleanData[rownum][1]<=1:
                     cd.append(cleanData[rownum])
-        
     return cd
 
-def biningNumericalData(data):
+def findColWithNumericalData(data):
+    d=copy.deepcopy(data)
+    d = numpy.transpose(d)
+    rowsWithNumericalData=[]
+    for row in range(len(data[0])):
+        if len(set(d[row]))>20:
+            rowsWithNumericalData.append(row)
+    return rowsWithNumericalData
+            
+    
+def binningNumericalData(data):
+    colsToBin=findColWithNumericalData(data)
     binNum=10
-    splitNumWinPerc = float(1)/binNum
-    splitNumTemp = float(100)/binNum
-    splitNumRunDif = float(150)/binNum
-    for i in range(0,binNum):
-        for rownum in range(len(data)):
-            if data[rownum][0]>=i*splitNumWinPerc and data[rownum][0]<((i+1)*splitNumWinPerc):
-                    data[rownum][0]=i+1
-            if data[rownum][1]>=i*splitNumWinPerc and data[rownum][1]<((i+1)*splitNumWinPerc):
-                    data[rownum][1]=i+1
-            if data[rownum][3]>=i*splitNumTemp and data[rownum][3]<((i+1)*splitNumTemp):
-                    data[rownum][3]=i+1
-            if data[rownum][11]>=-25+i*splitNumRunDif and data[rownum][11]<(-25+(i+1)*splitNumRunDif):
-                    data[rownum][11]=i+1
-            if data[rownum][12]>=-25+i*splitNumRunDif and data[rownum][12]<(-25+(i+1)*splitNumRunDif):
-                    data[rownum][12]=i+1
+    d=copy.deepcopy(data[1:len(data)])
+    d = numpy.transpose(d)
+    for col in colsToBin:
+        av=numpy.mean(d[col])
+        maxi=max(d[col])+av/binNum
+        mini=min(d[col])-av/binNum
+        split=float(maxi-mini)/binNum
+        for i in range(binNum):
+            for row in range(1,len(data)):
+                if data[row][col]>=i*split and data[row][col]<(i+1)*split:
+                     data[row][col]=i+1
+
     return data
 
 
