@@ -62,16 +62,15 @@ def binningNumericalData(data):
         split=float(maxi-mini)/binNum
         for i in range(binNum):
             for row in range(1,len(data)):
-                if data[row][col]>=i*split and data[row][col]<(i+1)*split:
+                if data[row][col]>=mini+i*split and data[row][col]<mini+(i+1)*split:
                      data[row][col]=i+1
-
     return data
 
 
 def preProcessData(FileName):
     d = readCSVFile(FileName)
     cd = cleanData(d)
-    dataToTrain = biningNumericalData(cd)
+    dataToTrain = binningNumericalData(cd)
     return dataToTrain
 
 def targetEntropy(data):
@@ -130,7 +129,6 @@ def infoGain(data):
             d['nominalVal'] = l[1][elemNum]
             d['col'] = l[2]
             infoGainList.append(d)
-
     return infoGainList
     
 
