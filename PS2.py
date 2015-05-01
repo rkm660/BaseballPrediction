@@ -144,21 +144,55 @@ def createTree(data, attributes, target):
     elif vals.count(vals[0]) == len(vals):
         return vals[0]
     else:
-        
-        entropyMinusgainList = []
-        entropy = targetEntropy(data)
-        for attr in attributes:
-            print(attr)
-            entropyMinusgainList.append(entropy-infoGain(attr,attributes.index(attr)))
-        best = max(entropyMinusgainList)
 
+        infoGainData = infoGain(data)
+        infoGainDict = {}
+        for obj in infoGainData:
+           infoGainDict[str(obj['col']) + str(int(obj['nominalVal']))] = obj["infoGain"]
+        best = max(infoGainDict, key=infoGainDict.get)
+        print(best)
+        for obj in infoGainData:
+            if (str(obj['col']) + str(int(obj['nominalVal'])) == best):
+                bestCol = obj["col"]
+                print(obj)
         tree = {best:{}}
+        for val in getUniqueValues(data,bestCol):
+            subtree = createTree(getInstances(data,bestCol,val),
+                [attr for attr in attributes if attr != bestCol],
+                target)
 
-    return tree
+            tree[best][val] = subtree
 
-def getInstances(data,best,val):
-    returnData = []
-    for instance in data:
-        if (instance[best] == val):
-            returnData.append(instance)
-    return returnData
+
+
+        
+        return tree
+
+
+
+def getInstances(data, best, val):
+    returnList = []
+    for record in data:
+        value = record[best]
+        if (value == val):
+            returnList.append(record)
+    return returnList
+
+
+def getUniqueValues(data,best):
+    returnList = []
+    for record in data:
+        returnList.append(record[best])
+    return list(set(returnList))
+
+    
+
+raw = preProcessData("btrain.csv")
+attributes = raw[0]
+data = raw[1:]
+target = len(attributes)-1
+print(createTree(data, attributes, target))
+
+
+
+
