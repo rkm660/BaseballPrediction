@@ -7,7 +7,7 @@ import numpy
 def readCSVFile(fileName):
     with open(fileName, 'rb') as f:
         reader = csv.reader(f)
-        trainData = map(tuple, reader)
+        trainData = map(list, reader)
     return trainData
 
 def getAttributeNames(data):
@@ -19,6 +19,7 @@ def getAttributeNames(data):
 
 ##Change cleanData so that it takes the avg for numerical vals and mode for nominal
 def cleanData(data):
+    numericalCols = findColWithNumericalData(data) 
     cleanData=[]
     for rowNum in range(len(data)):
         if rowNum<1:
@@ -57,8 +58,8 @@ def binningNumericalData(data):
     d = numpy.transpose(d)
     for col in colsToBin:
         av=numpy.mean(d[col])
-        maxi=max(d[col])+av/binNum
-        mini=min(d[col])-av/binNum
+        maxi=max(d[col])
+        mini=min(d[col])
         split=float(maxi-mini)/binNum
         for i in range(binNum):
             for row in range(1,len(data)):
@@ -126,7 +127,7 @@ def infoGain(data):
         l=columnEntropy(data,col)
         for elemNum in range(len(l[0])):
             d={'infoGain':(target-l[0][elemNum])}
-            d['nominalVal'] = l[1][elemNum]
+            d['binVal'] = l[1][elemNum]
             d['col'] = l[2]
             infoGainList.append(d)
     return infoGainList
