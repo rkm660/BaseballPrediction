@@ -96,8 +96,14 @@ def targetEntropy(data):
             winCount+=1
         else:
             loseCount+=1
-    probWin=float(winCount)/(winCount+loseCount)
-    probLose=float(loseCount)/(winCount+loseCount)
+    if winCount==0:
+        probWin=0
+    else:
+        probWin=float(winCount)/(winCount+loseCount)
+    if loseCount==0:
+        probLose=0
+    else:
+        probLose=float(loseCount)/(winCount+loseCount)
     if probWin<=0 or probLose <=0:
         entropy=0
     else:
@@ -157,6 +163,7 @@ def infoGain(data, listOfAttr):
     
 
 def createTree(data, attributes, target):
+    allAttrNames=['winpercent', ' oppwinpercent', ' weather', ' temperature', ' numinjured', ' oppnuminjured', ' startingpitcher', ' oppstartingpitcher', ' dayssincegame', ' oppdayssincegame', ' homeaway', ' rundifferential', ' opprundifferential']
     d = copy.deepcopy(data)
     vals = [instance[target] for instance in data]
     default = max(set(vals), key=vals.count)
@@ -180,12 +187,13 @@ def createTree(data, attributes, target):
         tree = {best:{}}
         for val in getUniqueValues(d,bestCol):
             print(val)
-            print([attr for attr in attributeNames if attr != attributeNames[bestCol]])
+            print([attr for attr in attributeNames if attr != allAttrNames[bestCol]])
             subtree = createTree(getInstances(d,bestCol,val),
-                [attr for attr in attributeNames if attr != attributeNames[bestCol]],
+                [attr for attr in attributeNames if attr != allAttrNames[bestCol]],
                 target)
 
-            tree[attributeNames[bestCol]][val] = subtree
+            #print attributeNames[bestCol]
+            tree[allAttrNames[bestCol]+str(val)] = subtree
         
         return tree
 
