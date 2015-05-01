@@ -98,7 +98,10 @@ def targetEntropy(data):
             loseCount+=1
     probWin=float(winCount)/(winCount+loseCount)
     probLose=float(loseCount)/(winCount+loseCount)
-    entropy = -probLose*math.log(probLose,2)-probWin*math.log(probWin,2)
+    if probWin<=0 or probLose <=0:
+        entropy=0
+    else:
+        entropy = -probLose*math.log(probLose,2)-probWin*math.log(probWin,2)
     return entropy
 
 def attributeEntropy(data, col):
@@ -114,7 +117,7 @@ def attributeEntropy(data, col):
         wc=0
         lc=0
         nvc=0
-        for rownum in range(1,len(data)-1):
+        for rownum in range(1,len(data)):
             if data[rownum][col]==elem:
                 nvc+=1
                 if data[rownum][13]==1:
@@ -133,7 +136,7 @@ def attributeEntropy(data, col):
         probBinOccurs.append(float(nomValCounts[elemNum])/(sum(nomValCounts)))
     entropyPerNominal=[]
     for elemNum in range(len(probWin)):
-        if probLose[elemNum]==0 or probWin[elemNum]==0:
+        if probLose[elemNum]<=0 or probWin[elemNum]<=0:
             e=0
         else:
             e=-probLose[elemNum]*math.log(probLose[elemNum],2)-probWin[elemNum]*math.log(probWin[elemNum],2)
@@ -142,47 +145,47 @@ def attributeEntropy(data, col):
     s=sum(entropyPerNominal)
     return (s)
 
-def infoGain(data):
+def infoGain(data, listOfAttr):
+    allAttrNames=['winpercent', ' oppwinpercent', ' weather', ' temperature', ' numinjured', ' oppnuminjured', ' startingpitcher', ' oppstartingpitcher', ' dayssincegame', ' oppdayssincegame', ' homeaway', ' rundifferential', ' opprundifferential']
     target=targetEntropy(data)
     infoGainList=[]
-    for col in range(len(data[0])):
-        l=attributeEntropy(data,col)
-        infoGainList.append(l)
+    for col in range(len(allAttrNames)):
+        if allAttrNames[col] in listOfAttr:
+            l=attributeEntropy(data,col)
+            infoGainList.append([target-l,col])
     return infoGainList
     
 
 def createTree(data, attributes, target):
-   
-    data    = data[:]
-    vals    = [instance[target] for instance in data]
+    d = copy.deepcopy(data)
+    vals = [instance[target] for instance in data]
     default = max(set(vals), key=vals.count)
-    attributeNames = attributes
-    if not data or (len(attributes) - 1) <= 0:
+    attributeNames = copy.deepcopy(attributes)
+    if not d or (len(attributeNames) - 1) <= 0:
         return default
-
+    elif targetEntropy(d)==0:
+        return default
     elif vals.count(vals[0]) == len(vals):
         return vals[0]
     else:
 
-        infoGainList = infoGain(data)
-        best = max(infoGainList)
-        bestCol = infoGainList.index(best)
+        infoGainList = infoGain(d,attributeNames)
+        best=infoGainList[0][0]
+        bestCol=infoGainList[0][1]
+        for i in range(1,len(infoGainList)):
+            if best<infoGainList[i][0]:
+                best=infoGainList[i][0]
+                bestCol=infoGainList[i][1]
         print("best col: " + str(bestCol))
         tree = {best:{}}
-        for val in getUniqueValues(data,bestCol):
+        for val in getUniqueValues(d,bestCol):
             print(val)
-            print(attributeNames[bestCol])
-            subset = numpy.transpose(data).tolist()
-            subset = data[0:bestCol] + data[bestCol+1:len(subset)]
-            subset = numpy.transpose(subset).tolist()
-            subtree = createTree(getInstances(subset,bestCol,val),
+            print([attr for attr in attributeNames if attr != attributeNames[bestCol]])
+            subtree = createTree(getInstances(d,bestCol,val),
                 [attr for attr in attributeNames if attr != attributeNames[bestCol]],
                 target)
 
-            tree[attributes[bestCol]][val] = subtree
-
-
-
+            tree[attributeNames[bestCol]][val] = subtree
         
         return tree
 
@@ -207,6 +210,7 @@ def getUniqueValues(data,best):
 
 raw = preProcessData("btrain.csv")
 attributes = raw[0]
+
 data = raw[1:]
 target = len(attributes)-1
 result = createTree(data, attributes, target)
