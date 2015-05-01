@@ -54,6 +54,7 @@ def cleanData(data):
                         cd.append(cleanData[r])
     return cd
 
+
 def findColWithNumericalData(data):
     d=copy.deepcopy(data)
     d = numpy.transpose(d)
@@ -66,7 +67,7 @@ def findColWithNumericalData(data):
     
 def binningNumericalData(data):
     colsToBin=findColWithNumericalData(data)
-    binNum=10
+    binNum=5
     d=copy.deepcopy(data[1:len(data)])
     d = numpy.transpose(d)
     for col in colsToBin:
@@ -155,7 +156,7 @@ def createTree(data, attributes, target):
     data    = data[:]
     vals    = [instance[target] for instance in data]
     default = max(set(vals), key=vals.count)
-
+    attributeNames = attributes
     if not data or (len(attributes) - 1) <= 0:
         return default
 
@@ -163,23 +164,22 @@ def createTree(data, attributes, target):
         return vals[0]
     else:
 
-        infoGainData = infoGain(data)
-        infoGainDict = {}
-        for obj in infoGainData:
-           infoGainDict[str(obj['col']) + str(int(obj['nominalVal']))] = obj["infoGain"]
-        best = max(infoGainDict, key=infoGainDict.get)
-        print(best)
-        for obj in infoGainData:
-            if (str(obj['col']) + str(int(obj['nominalVal'])) == best):
-                bestCol = obj["col"]
-                print(obj)
+        infoGainList = infoGain(data)
+        best = max(infoGainList)
+        bestCol = infoGainList.index(best)
+        print("best col: " + str(bestCol))
         tree = {best:{}}
         for val in getUniqueValues(data,bestCol):
-            subtree = createTree(getInstances(data,bestCol,val),
-                [attr for attr in attributes if attr != bestCol],
+            print(val)
+            print(attributeNames[bestCol])
+            subset = numpy.transpose(data).tolist()
+            subset = data[0:bestCol] + data[bestCol+1:len(subset)]
+            subset = numpy.transpose(subset).tolist()
+            subtree = createTree(getInstances(subset,bestCol,val),
+                [attr for attr in attributeNames if attr != attributeNames[bestCol]],
                 target)
 
-            tree[best][val] = subtree
+            tree[attributes[bestCol]][val] = subtree
 
 
 
@@ -205,12 +205,12 @@ def getUniqueValues(data,best):
 
     
 
-##raw = preProcessData("btrain.csv")
-##attributes = raw[0]
-##data = raw[1:]
-##target = len(attributes)-1
-##print(createTree(data, attributes, target))
-##
-##
+raw = preProcessData("btrain.csv")
+attributes = raw[0]
+data = raw[1:]
+target = len(attributes)-1
+result = createTree(data, attributes, target)
+
+
 
 
