@@ -139,13 +139,13 @@ def attributeEntropy(data, col):
             e=e*probBinOccurs[elemNum]
         entropyPerNominal.append(e)
     s=sum(entropyPerNominal)
-    return (s, col)
+    return (s)
 
 def infoGain(data):
     target=targetEntropy(data)
     infoGainList=[]
     for col in range(len(data[0])):
-        l=columnEntropy(data,col)
+        l=attributeEntropy(data,col)
         infoGainList.append(l)
     return infoGainList
     
@@ -205,12 +205,12 @@ def getUniqueValues(data,best):
 
     
 
-raw = preProcessData("btrain.csv")
-attributes = raw[0]
-data = raw[1:]
-target = len(attributes)-1
-print(createTree(data, attributes, target))
-
-
+##raw = preProcessData("btrain.csv")
+##attributes = raw[0]
+##data = raw[1:]
+##target = len(attributes)-1
+##print(createTree(data, attributes, target))
+##
+##
 
 
