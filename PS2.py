@@ -3,6 +3,7 @@ import math
 from operator import itemgetter
 import copy
 import numpy
+from collections import Counter
 
 def readCSVFile(fileName):
     with open(fileName, 'rb') as f:
@@ -10,35 +11,49 @@ def readCSVFile(fileName):
         trainData = map(list, reader)
     return trainData
 
-def getAttributeNames(data):
-    d = {}
-    row1=data[0]
-    for attrnum in range(len(row1)):
-        d[attrnum] = row1[attrnum]
-    return d
-
 ##Change cleanData so that it takes the avg for numerical vals and mode for nominal
 def cleanData(data):
     numericalCols = findColWithNumericalData(data) 
+    rd=[]
+    modes=[]
+    medians=[]
+    d=copy.deepcopy(data[1:len(data)])
+    for rowNum in range(len(d)):
+        if '?' not in d[rowNum]:
+            r=[]
+            for elem in range(len(d[rowNum])):
+                r.append(float(d[rowNum][elem]))
+            rd.append(r)
+    rd = numpy.transpose(rd)
+    for row in range(len(data[0])):
+        mo=Counter(rd[row])
+        modes.append(mo.most_common(1)[0][0])
+        medians.append(float(numpy.median(rd[row])))
+    for rowN in range(1,len(data)):
+        if '?' in data[rowN]:
+            colQ=[i for i,x in enumerate(data[rowN]) if x == '?']
+            for col in colQ:
+                if col in numericalCols:
+                    data[rowN][col]=medians[col]
+                else:
+                    data[rowN][col]=modes[col]
     cleanData=[]
-    for rowNum in range(len(data)):
-        if rowNum<1:
-            cleanData.append(data[rowNum])
-        else:
-            if '?' not in data[rowNum]:
-                row = data[rowNum]
-                r=[]
-                for elem in row:
-                    r.append(float(elem))
-                cleanData.append(r)
+    cleanData.append(data[0])
+    for rownum in range(1,len(data)):
+        row=data[rownum]
+        r=[]
+        for elem in range(len(row)):
+            r.append(float(row[elem]))
+        cleanData.append(r)
+
     cd=[]
-    for rownum in range(len(cleanData)):
-        if rownum<1:
-            cd.append(cleanData[rownum])
-        else:
-            if cleanData[rownum][0]>=0 and cleanData[rownum][1]>=0:
-                if cleanData[rownum][0]<=1 and cleanData[rownum][1]<=1:
-                    cd.append(cleanData[rownum])
+    cd.append(cleanData[0])
+    for r in range(1,len(cleanData)):
+        if cleanData[r][0]>=0 and cleanData[r][0]<=1:
+            if cleanData[r][1]>=0 and cleanData[r][1]<=1:
+                if cleanData[r][4]>=0 and cleanData[r][5]>=0 and cleanData[r][6]>=0 and cleanData[r][7]>=0 and cleanData[r][8]>=0 and cleanData[r][9]>=0:
+                    if cleanData[r][10] in [0,1] and cleanData[r][13] in [0,1]:
+                        cd.append(cleanData[r])
     return cd
 
 def findColWithNumericalData(data):
