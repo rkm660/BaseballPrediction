@@ -47,6 +47,8 @@ def cleanData(data):
     cd=[]
     cd.append(cleanData[0])
     for r in range(1,len(cleanData)):
+        if cleanData[r][2]<0:
+            cleanData[r][2]=2
         if cleanData[r][0]>=0 and cleanData[r][0]<=1:
             if cleanData[r][1]>=0 and cleanData[r][1]<=1:
                 if cleanData[r][4]>=0 and cleanData[r][5]>=0 and cleanData[r][6]>=0 and cleanData[r][7]>=0 and cleanData[r][8]>=0 and cleanData[r][9]>=0:
@@ -164,7 +166,7 @@ def infoGain(data, listOfAttr):
 
 def createTree(data, attributes, target):
     allAttrNames=['winpercent', ' oppwinpercent', ' weather', ' temperature', ' numinjured', ' oppnuminjured', ' startingpitcher', ' oppstartingpitcher', ' dayssincegame', ' oppdayssincegame', ' homeaway', ' rundifferential', ' opprundifferential']
-    d = copy.deepcopy(data)
+    d = data
     vals = [instance[target] for instance in data]
     default = max(set(vals), key=vals.count)
     attributeNames = copy.deepcopy(attributes)
@@ -183,21 +185,17 @@ def createTree(data, attributes, target):
             if best<infoGainList[i][0]:
                 best=infoGainList[i][0]
                 bestCol=infoGainList[i][1]
-        print("best col: " + str(bestCol))
-        tree = {best:{}}
+        #tree = {best:{}}
+        tree = {}
         for val in getUniqueValues(d,bestCol):
-            print(val)
-            print([attr for attr in attributeNames if attr != allAttrNames[bestCol]])
             subtree = createTree(getInstances(d,bestCol,val),
                 [attr for attr in attributeNames if attr != allAttrNames[bestCol]],
                 target)
 
             #print attributeNames[bestCol]
-            tree[allAttrNames[bestCol]+str(val)] = subtree
+            tree[allAttrNames[bestCol]+str(float(val))] = subtree
         
         return tree
-
-
 
 def getInstances(data, best, val):
     returnList = []
@@ -214,7 +212,53 @@ def getUniqueValues(data,best):
         returnList.append(record[best])
     return list(set(returnList))
 
-    
+
+def testAccuracy(model,validationSet):
+    vd=preProcessData(validationSet)
+    attributeNames=vd[0]
+    numCorrect=0
+    numIncorrect=0
+    for row in range(1,len(vd)):
+        if validateRow(model,vd[row],[]):
+            numCorrect+=1
+            print 'correct '+ str(numCorrect)
+        else:
+            numIncorrect+=1
+            print 'wrong '+ str(numIncorrect)
+    print numCorrect
+    print numIncorrect
+    print 'percent accuracy: ' + str(float(numCorrect)/(numIncorrect+numCorrect))
+
+
+def validateRow(model,row,keys):
+    newKeys = copy.deepcopy(keys)
+    allAttrNames=['winpercent', ' oppwinpercent', ' weather', ' temperature', ' numinjured', ' oppnuminjured', ' startingpitcher', ' oppstartingpitcher', ' dayssincegame', ' oppdayssincegame', ' homeaway', ' rundifferential', ' opprundifferential']
+    if newKeys:
+        branch = copy.deepcopy(model)
+        for elem in newKeys:
+           branch=branch[elem]
+    else:
+        branch = model
+    if isinstance(branch,dict):
+        k=branch.keys()
+        keyVals=[]
+        for elem in k:
+            keyName = elem[0:len(elem)-3]
+            keyVals.append(float(elem[len(elem)-3:len(elem)]))
+        if keyName in allAttrNames:
+            col = allAttrNames.index(keyName)
+            rowVal = row[col]
+            for e in keyVals:
+                if e == rowVal:
+                    newKeys.append(keyName+str(e))
+            print newKeys
+            validateRow(model,row,newKeys)
+    else:
+        if branch==row[len(allAttrNames)]:
+            t=True
+        else:
+            t=False
+        return t
 
 raw = preProcessData("btrain.csv")
 attributes = raw[0]
