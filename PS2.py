@@ -11,7 +11,6 @@ def readCSVFile(fileName):
         trainData = map(list, reader)
     return trainData
 
-##Change cleanData so that it takes the avg for numerical vals and mode for nominal
 def cleanData(data):
     numericalCols = findColWithNumericalData(data) 
     rd=[]
@@ -45,7 +44,6 @@ def cleanData(data):
         for elem in range(len(row)):
             r.append(float(row[elem]))
         cleanData.append(r)
-
     cd=[]
     cd.append(cleanData[0])
     for r in range(1,len(cleanData)):
@@ -102,7 +100,7 @@ def targetEntropy(data):
     entropy = -probLose*math.log(probLose,2)-probWin*math.log(probWin,2)
     return entropy
 
-def columnEntropy(data, col):
+def attributeEntropy(data, col):
     nominalVals=[]
     for rownum in range(1,len(data)):
         if data[rownum][col] not in nominalVals:
@@ -110,41 +108,45 @@ def columnEntropy(data, col):
     nominalVals=sorted(nominalVals)
     winCounts=[]
     loseCounts=[]
+    nomValCounts=[]
     for elem in nominalVals:
         wc=0
         lc=0
-        for rownum in range(1,len(data)):
+        nvc=0
+        for rownum in range(1,len(data)-1):
             if data[rownum][col]==elem:
+                nvc+=1
                 if data[rownum][13]==1:
                     wc+=1
                 else:
                     lc+=1
         winCounts.append(wc)
         loseCounts.append(lc)
+        nomValCounts.append(nvc)
     probWin=[]
     probLose=[]
+    probBinOccurs=[]
     for elemNum in range(len(winCounts)):
         probWin.append(float(winCounts[elemNum])/(sum(winCounts)+sum(loseCounts)))
         probLose.append(float(loseCounts[elemNum])/(sum(winCounts)+sum(loseCounts)))
+        probBinOccurs.append(float(nomValCounts[elemNum])/(sum(nomValCounts)))
     entropyPerNominal=[]
     for elemNum in range(len(probWin)):
         if probLose[elemNum]==0 or probWin[elemNum]==0:
             e=0
         else:
             e=-probLose[elemNum]*math.log(probLose[elemNum],2)-probWin[elemNum]*math.log(probWin[elemNum],2)
+            e=e*probBinOccurs[elemNum]
         entropyPerNominal.append(e)
-    return (entropyPerNominal, nominalVals, col)
+    s=sum(entropyPerNominal)
+    return (s, col)
 
 def infoGain(data):
     target=targetEntropy(data)
     infoGainList=[]
     for col in range(len(data[0])):
         l=columnEntropy(data,col)
-        for elemNum in range(len(l[0])):
-            d={'infoGain':(target-l[0][elemNum])}
-            d['binVal'] = l[1][elemNum]
-            d['col'] = l[2]
-            infoGainList.append(d)
+        infoGainList.append(l)
     return infoGainList
     
 
