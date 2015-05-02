@@ -14,3 +14,6 @@ Readme
 
 -Run testAccuracy() with a decision tree and validation set to test the accuracy of a model given a validation set.
 	EX testAccuracy(model,’bvalidate.csv’)
+
+
+NOTE: Unfortunately, our validation takes several hours to run, therefore we were unable to label the target value of the test set.
