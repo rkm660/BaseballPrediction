@@ -4,6 +4,7 @@ from operator import itemgetter
 import copy
 import numpy
 from collections import Counter
+import random
 
 def readCSVFile(fileName):
     with open(fileName, 'rb') as f:
@@ -269,4 +270,23 @@ result = createTree(data, attributes, target)
 
 
 
+def printBooleanForm(model,keys):
+    newKeys = copy.deepcopy(keys)
+    allAttrNames=['winpercent', ' oppwinpercent', ' weather', ' temperature', ' numinjured', ' oppnuminjured', ' startingpitcher', ' oppstartingpitcher', ' dayssincegame', ' oppdayssincegame', ' homeaway', ' rundifferential', ' opprundifferential']
+    if newKeys:
+        branch = copy.deepcopy(model)
+        print(newKeys)
+        for elem in newKeys:
+           branch=branch[elem]                
+    else:
+        branch = copy.deepcopy(model)
+    if isinstance(branch,dict):
+        k=branch.keys()
+        ranNum = random.randrange(0,len(k))
+        newKeys.append(k[ranNum])
+        return printBooleanForm(model,newKeys)
+    else:
+        newKeys.append(str(branch))
+        return newKeys
+    
 
