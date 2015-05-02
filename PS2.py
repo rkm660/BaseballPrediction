@@ -270,12 +270,29 @@ result = createTree(data, attributes, target)
 
 
 
+def normalForm(lst):
+    routes = []
+    while (len(routes) <= 16):
+        route = printBooleanForm(result, [])
+        if (route[len(route)-1] == "1.0" and route not in routes):
+            routes.append(route)
+    return routes
+    
+    
+
+def printNormalForm(lst):
+    for i in range(len(lst)):
+        for j in range(len(lst[i])):
+            if (j != len(lst[i])):
+                print(lst[i][j] + " AND ")
+        if (i != len(lst[i])):
+            print(" OR ")
+
 def printBooleanForm(model,keys):
     newKeys = copy.deepcopy(keys)
     allAttrNames=['winpercent', ' oppwinpercent', ' weather', ' temperature', ' numinjured', ' oppnuminjured', ' startingpitcher', ' oppstartingpitcher', ' dayssincegame', ' oppdayssincegame', ' homeaway', ' rundifferential', ' opprundifferential']
     if newKeys:
         branch = copy.deepcopy(model)
-        print(newKeys)
         for elem in newKeys:
            branch=branch[elem]                
     else:
@@ -289,4 +306,6 @@ def printBooleanForm(model,keys):
         newKeys.append(str(branch))
         return newKeys
     
+x = normalForm(printBooleanForm(result,[]))
+printNormalForm(x)
 
