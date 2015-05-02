@@ -418,9 +418,11 @@ a disjunctive normal form
 def printNormalForm(lst):
     for i in range(len(lst)):
         for j in range(len(lst[i])):
-            if (j != len(lst[i])):
+            if (j < len(lst[i])):
                 print(lst[i][j] + " AND ")
-        if (i != len(lst[i])):
+            else:
+                print(lst[i][j])
+        if (i < len(lst[i])):
             print(" OR ")
 
 #######################################################
