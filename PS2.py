@@ -233,7 +233,7 @@ def testAccuracy(model,validationSet):
 
 
 def validateRow(model,row,keys):
-    newKeys = copy.deepcopy(keys)
+    newKeys = keys
     allAttrNames=['winpercent', ' oppwinpercent', ' weather', ' temperature', ' numinjured', ' oppnuminjured', ' startingpitcher', ' oppstartingpitcher', ' dayssincegame', ' oppdayssincegame', ' homeaway', ' rundifferential', ' opprundifferential']
     if newKeys:
         branch = copy.deepcopy(model)
@@ -293,3 +293,11 @@ def printBooleanForm(model,keys):
         return newKeys
     
 
+def pruning(model):    
+    prunedModel=copy.deepcopy(model)
+    path=[]
+    branch=model
+    k=branch.keys()
+    r=random.randint(0,len(k))
+    prunedModel.pop(k[r])
+    return prunedModel
