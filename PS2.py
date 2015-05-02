@@ -393,6 +393,22 @@ result = createTree(data, attributes, target)
 
 #######################################################
 """
+pruning takes one of the branches and prunes it
+
+"""
+########################################################
+
+def pruning(model):    
+    prunedModel=copy.deepcopy(model)
+    path=[]
+    branch=model
+    k=branch.keys()
+    r=random.randint(0,len(k))
+    prunedModel.pop(k[r])
+    return prunedModel
+
+#######################################################
+"""
 normalForm returns a list of numerous unique routes
 whose target is 1
 
@@ -451,21 +467,7 @@ def printBooleanForm(model,keys):
         newKeys.append(str(branch))
         return newKeys
     
-x = normalForm(printBooleanForm(result,[]))
+x = normalForm(printBooleanForm(pruning(result),[]))
 printNormalForm(x)
 
-#######################################################
-"""
-pruning takes one of the branches and prunes it
 
-"""
-########################################################
-
-def pruning(model):    
-    prunedModel=copy.deepcopy(model)
-    path=[]
-    branch=model
-    k=branch.keys()
-    r=random.randint(0,len(k))
-    prunedModel.pop(k[r])
-    return prunedModel
