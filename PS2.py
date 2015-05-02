@@ -220,12 +220,13 @@ def testAccuracy(model,validationSet):
     numCorrect=0
     numIncorrect=0
     for row in range(1,len(vd)):
-        if validateRow(model,vd[row],[]):
+        c=validateRow(model,vd[row],[])
+        if not c:
             numCorrect+=1
-            print 'correct '+ str(numCorrect)
+            #print 'correct '+ str(numCorrect)
         else:
             numIncorrect+=1
-            print 'wrong '+ str(numIncorrect)
+            #print 'wrong '+ str(numIncorrect)
     print numCorrect
     print numIncorrect
     print 'percent accuracy: ' + str(float(numCorrect)/(numIncorrect+numCorrect))
@@ -249,16 +250,18 @@ def validateRow(model,row,keys):
         if keyName in allAttrNames:
             col = allAttrNames.index(keyName)
             rowVal = row[col]
-            for e in keyVals:
-                if e == rowVal:
-                    newKeys.append(keyName+str(e))
-            print newKeys
-            validateRow(model,row,newKeys)
+            if rowVal in keyVals:
+                for e in keyVals:
+                    if e == rowVal:
+                        newKeys.append(keyName+str(e))
+                return validateRow(model,row,newKeys)
+            else:
+                return True
     else:
-        if branch==row[len(allAttrNames)]:
-            t=True
-        else:
+        if branch!=row[len(allAttrNames)]:
             t=False
+        else:
+            t=True
         return t
 
 raw = preProcessData("btrain.csv")
