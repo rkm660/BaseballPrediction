@@ -6,11 +6,34 @@ import numpy
 from collections import Counter
 import random
 
+#######################################################
+"""
+readCSVFile opens an input csv file and returns the data
+in a list format
+
+"""
+########################################################
+
+
+
+
 def readCSVFile(fileName):
     with open(fileName, 'rb') as f:
         reader = csv.reader(f)
         trainData = map(list, reader)
     return trainData
+
+
+
+
+
+#######################################################
+"""
+cleanData parses the input data -- chcking for question
+marks and negative values
+
+"""
+########################################################
 
 def cleanData(data):
     numericalCols = findColWithNumericalData(data) 
@@ -58,6 +81,16 @@ def cleanData(data):
     return cd
 
 
+
+#######################################################
+"""
+findColWithNumericalData takes in a data object and
+isolates the columns containing numerical data
+"""
+########################################################
+
+
+
 def findColWithNumericalData(data):
     d=copy.deepcopy(data)
     d = numpy.transpose(d)
@@ -67,6 +100,16 @@ def findColWithNumericalData(data):
             rowsWithNumericalData.append(row)
     return rowsWithNumericalData
             
+
+#######################################################
+"""
+binningNumericalData takes a data object as input
+and returns the data with the numberical columns binned
+into ranges
+
+"""
+########################################################
+
     
 def binningNumericalData(data):
     colsToBin=findColWithNumericalData(data)
@@ -85,11 +128,29 @@ def binningNumericalData(data):
     return data
 
 
+#######################################################
+"""
+preProcessData opens an input csv file and returns the
+parsed and cleaned data
+
+"""
+########################################################
+
+
 def preProcessData(FileName):
     d = readCSVFile(FileName)
     cd = cleanData(d)
     dataToTrain = binningNumericalData(cd)
     return dataToTrain
+
+#######################################################
+"""
+targetEntropy calculates and returns the entropy for
+the target attribute
+
+"""
+########################################################
+
 
 def targetEntropy(data):
     winCount=0
@@ -112,6 +173,15 @@ def targetEntropy(data):
     else:
         entropy = -probLose*math.log(probLose,2)-probWin*math.log(probWin,2)
     return entropy
+
+
+#######################################################
+"""
+attributeEntropy takes data and a column as input, and
+returns the entropy for that specific column
+
+"""
+########################################################
 
 def attributeEntropy(data, col):
     nominalVals=[]
@@ -154,6 +224,16 @@ def attributeEntropy(data, col):
     s=sum(entropyPerNominal)
     return (s)
 
+#######################################################
+"""
+infoGain calculates the information game in bits for
+each attribute and returns a list of said values
+
+"""
+########################################################
+
+
+
 def infoGain(data, listOfAttr):
     allAttrNames=['winpercent', ' oppwinpercent', ' weather', ' temperature', ' numinjured', ' oppnuminjured', ' startingpitcher', ' oppstartingpitcher', ' dayssincegame', ' oppdayssincegame', ' homeaway', ' rundifferential', ' opprundifferential']
     target=targetEntropy(data)
@@ -164,6 +244,14 @@ def infoGain(data, listOfAttr):
             infoGainList.append([target-l,col])
     return infoGainList
     
+
+#######################################################
+"""
+createTree returns a tree in a nested dictionary format
+
+"""
+########################################################
+
 
 def createTree(data, attributes, target):
     allAttrNames=['winpercent', ' oppwinpercent', ' weather', ' temperature', ' numinjured', ' oppnuminjured', ' startingpitcher', ' oppstartingpitcher', ' dayssincegame', ' oppdayssincegame', ' homeaway', ' rundifferential', ' opprundifferential']
@@ -198,6 +286,13 @@ def createTree(data, attributes, target):
         
         return tree
 
+#######################################################
+"""
+getInstances is a helper function for createTree
+that gets an object containing an attribute "bin"
+"""
+########################################################
+
 def getInstances(data, best, val):
     returnList = []
     for record in data:
@@ -206,6 +301,15 @@ def getInstances(data, best, val):
             returnList.append(record)
     return returnList
 
+#######################################################
+"""
+getUniqueValues is a helper function for createTree
+that gets a list of the unique values in the best column
+for traversing
+
+"""
+########################################################
+
 
 def getUniqueValues(data,best):
     returnList = []
@@ -213,6 +317,13 @@ def getUniqueValues(data,best):
         returnList.append(record[best])
     return list(set(returnList))
 
+
+#######################################################
+"""
+testAccuracy attempts to measure the accuracy of a given model
+
+"""
+########################################################
 
 def testAccuracy(model,validationSet):
     vd=preProcessData(validationSet)
@@ -230,6 +341,15 @@ def testAccuracy(model,validationSet):
     print numCorrect
     print numIncorrect
     print 'percent accuracy: ' + str(float(numCorrect)/(numIncorrect+numCorrect))
+
+
+#######################################################
+"""
+validateRow checks to see whether a given instance of data
+in the training set is correct
+
+"""
+########################################################
 
 
 def validateRow(model,row,keys):
@@ -271,14 +391,51 @@ data = raw[1:]
 target = len(attributes)-1
 result = createTree(data, attributes, target)
 
+#######################################################
+"""
+normalForm returns a list of numerous unique routes
+whose target is 1
 
+"""
+########################################################
+
+def normalForm(lst):
+    routes = []
+    while (len(routes) <= 16):
+        route = printBooleanForm(result, [])
+        if (route[len(route)-1] == "1.0" and route not in routes):
+            routes.append(route)
+    return routes
+    
+#######################################################
+"""
+printNormalForm prints the data from normalForm in
+a disjunctive normal form
+
+"""
+########################################################
+
+def printNormalForm(lst):
+    for i in range(len(lst)):
+        for j in range(len(lst[i])):
+            if (j != len(lst[i])):
+                print(lst[i][j] + " AND ")
+        if (i != len(lst[i])):
+            print(" OR ")
+
+#######################################################
+"""
+printBooleanForm iterates the tree to get the pathway to
+a leaf
+
+"""
+########################################################
 
 def printBooleanForm(model,keys):
     newKeys = copy.deepcopy(keys)
     allAttrNames=['winpercent', ' oppwinpercent', ' weather', ' temperature', ' numinjured', ' oppnuminjured', ' startingpitcher', ' oppstartingpitcher', ' dayssincegame', ' oppdayssincegame', ' homeaway', ' rundifferential', ' opprundifferential']
     if newKeys:
         branch = copy.deepcopy(model)
-        print(newKeys)
         for elem in newKeys:
            branch=branch[elem]                
     else:
@@ -292,6 +449,8 @@ def printBooleanForm(model,keys):
         newKeys.append(str(branch))
         return newKeys
     
+x = normalForm(printBooleanForm(result,[]))
+printNormalForm(x)
 
 def pruning(model):    
     prunedModel=copy.deepcopy(model)
