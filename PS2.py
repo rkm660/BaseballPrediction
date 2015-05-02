@@ -452,6 +452,13 @@ def printBooleanForm(model,keys):
 x = normalForm(printBooleanForm(result,[]))
 printNormalForm(x)
 
+#######################################################
+"""
+pruning takes one of the branches and prunes it
+
+"""
+########################################################
+
 def pruning(model):    
     prunedModel=copy.deepcopy(model)
     path=[]
